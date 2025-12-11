@@ -62,8 +62,7 @@ export const page = async (
   let products = []
 
   let rest = [...totalRefs]
-  let waitTime = 1000
-  let errors = []
+  let waitTime = 0
 
   while (maxRetries > 0 || rest.length > 0) {
     let failed = []
