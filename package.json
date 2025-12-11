@@ -8,7 +8,11 @@
   },
   "scripts": {
     "run": "node src/cli/index.js",
-    "example": "node src/cli/index.js test.csv 123 \"sole биде\""
+    "example": "node src/cli/index.js test.csv 123 \"sole биде\"",
+    "test": "MAX_RETRIES=10 node src/cli/index.js test.csv \"Биде Sole\" \"Смеситель Kerama Marazzi\"",
+    "test:1": "MAX_RETRIES=10 node src/cli/index.js test_1.csv \"Биде Sole\"",
+    "test:2": "MAX_RETRIES=10 node src/cli/index.js test_2.csv \"Смеситель Kerama Marazzi\"",
+    "test:custom": "MAX_RETRIES=10 node src/cli/index.js test_custom.csv 200 \"серый\""
   },
   "keywords": [],
   "author": "",
