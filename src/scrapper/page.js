@@ -11,6 +11,7 @@ import { single as scrapeProductPage } from "../scrapper/single.js"
  * Регулярное выражение для проверки URL поиска
  * @param {RegExp} [options.productPattern=/(https?:\/\/)?magbo.ru\/catalog\/[a-z\d\/-]+/]
  * Регулярное выражение для проверки URL товара
+ * @param {number} [options.maxRetries=0] Количество повторов запросов
  * @returns {ProductWithURL} Данные продуктов по запросу
  */
 export const page = async (
@@ -19,19 +20,23 @@ export const page = async (
     baseUrl = "https://magbo.ru",
     searchPattern = /(((https?:\/\/)?magbo.ru\/catalog\/)([a-z\d\/-]+)?)(\?(((q=[A-Za-z\dА-Яа-я%_-]+)|(s=((Найти)|(%D0%9D%D0%B0%D0%B9%D1%82%D0%B8))+)|(PAGEN_\d=[\d]+))&?)+)?/,
     productPattern = /(https?:\/\/)?magbo.ru\/catalog\/[a-z\d\/-]+/,
+    maxRetries = 0,
   } = {},
 ) => {
   /**@type {string | undefined} */
   let nextUrl = url
+  let pageNumber = 1
 
   /**@type{string[]} */
   let totalRefs = []
   let lostRefs = 0
   while (nextUrl !== undefined) {
     const page = await load(nextUrl, { pattern: searchPattern })
-    const { refs, nextPage: next } = parseSearchPage(page, { baseUrl: baseUrl })
+    const { refs, nextPage: next } = parseSearchPage(page, {
+      baseUrl: baseUrl,
+      currentPage: pageNumber,
+    })
     nextUrl = next
-    console.debug(`DEBUG: ${nextUrl}`)
 
     const defined = refs.filter((ref) => ref !== undefined)
     if (defined.length < refs.length) {
@@ -40,6 +45,7 @@ export const page = async (
     }
     totalRefs.push(...defined)
 
+    pageNumber += 1
     if (nextUrl === undefined) {
       console.log("Достигнута последняя страница")
       break
@@ -54,15 +60,43 @@ export const page = async (
    * @type {ProductWithURL[]}
    */
   let products = []
-  await Promise.all(
-    totalRefs.map((ref) => {
-      return scrapeProductPage(ref, { pattern: productPattern })
-        .then((product) => {
-          products.push(product)
-        })
-        .catch((err) => console.error(err))
-    }),
-  )
+
+  let rest = [...totalRefs]
+  let waitTime = 1000
+  let errors = []
+
+  while (rest.length > 0 || maxRetries > 0) {
+    let failed = []
+
+    await Promise.all(
+      rest.map((ref) => {
+        return scrapeProductPage(ref, { pattern: productPattern })
+          .then((product) => {
+            products.push(product)
+          })
+          .catch((err) => {
+            errors.push(err)
+            failed.push(ref)
+          })
+      }),
+    )
+    rest = failed
+
+    if (rest.length > 0) {
+      maxRetries -= 1
+      console.warn(
+        `Не удалось загрузить ${rest.length}, повтор через ${waitTime}мс, осталось ${maxRetries} попыток`,
+      )
+      await new Promise((resolve) => setTimeout(resolve, waitTime))
+      waitTime += 1000
+    }
+  }
+
+  if (rest.length > 0) {
+    console.warn(`Не удалось загрузить ${rest.length}`)
+    console.warn(rest)
+    console.error(errors)
+  }
 
   return products
 }
