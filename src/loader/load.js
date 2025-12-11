@@ -4,6 +4,7 @@
  * @param {Object} [options] Опции загрузки
  * @param {RegExp} [options.pattern=/(https?:\/\/)?magbo.ru\/catalog\/[a-z\d\/-]+/]
  * Регулярное выражение для проверки URL
+ * @param {number} [options.timeout=10_000] Таймаут запроса
  * @returns {Promise<string>} HTML ответа на запрос
  */
 export const load = async (
