@@ -12,7 +12,7 @@ import { single as scrapeProductPage } from "../scrapper/single.js"
  * @param {RegExp} [options.productPattern=/(https?:\/\/)?magbo.ru\/catalog\/[a-z\d\/-]+/]
  * Регулярное выражение для проверки URL товара
  * @param {number} [options.maxRetries=0] Количество повторов запросов
- * @returns {ProductWithURL} Данные продуктов по запросу
+ * @returns {ProductWithURL[]} Данные продуктов по запросу
  */
 export const page = async (
   url,
