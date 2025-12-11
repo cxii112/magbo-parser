@@ -16,7 +16,9 @@ export const single = async (
   } = {},
 ) => {
   const page = await load(url, { pattern: pattern })
+  console.log(`Парсим ${url}`)
   const product = parseProductPage(page)
+  console.log(`Парсинг завершен ${url}`)
   return {
     url: url,
     ...product,
