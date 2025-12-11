@@ -54,6 +54,11 @@ export const page = async (
   if (totalRefs.length > 0) {
     console.warn(`Потеряно ссылок ${lostRefs}`)
   }
+  if (totalRefs.length === 0) {
+    console.warn(`Не удалось собрать ссылки`)
+    return []
+  }
+  console.log(`Найдено ссылок ${totalRefs.length}`)
 
   /**
    * @typedef {import('./productWithUrl').ProductWithURL} ProductWithURL
