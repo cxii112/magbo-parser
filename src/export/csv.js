@@ -27,9 +27,7 @@ export const csv = (
     },
   },
 ) => {
-  if (data.length === 0) return
-
-  const keys = Object.keys(data[0])
+  const keys = Object.keys(keysToHeaders)
   const columns = keys.map((k) => {
     return {
       key: k,
@@ -48,7 +46,7 @@ export const csv = (
   data.forEach((rec) => {
     out.write(
       keys.map((k) => {
-        return rec[k]
+        return rec[k] || ""
       }),
     )
   })
