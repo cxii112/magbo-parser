@@ -1,3 +1,5 @@
+import { Expand } from "../types"
+
 export type Product = Expand<
   {
     title: string
