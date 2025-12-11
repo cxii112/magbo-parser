@@ -142,3 +142,4 @@ vite.config.ts.timestamp-*
 pnpm-lock.yaml
 .zed/debug.json
 ./**/*.csv
+*.csv
