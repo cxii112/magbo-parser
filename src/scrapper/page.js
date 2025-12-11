@@ -31,23 +31,27 @@ export const page = async (
   let totalRefs = []
   let lostRefs = 0
   while (nextUrl !== undefined) {
-    const page = await load(nextUrl, { pattern: searchPattern })
-    const { refs, nextPage: next } = parseSearchPage(page, {
-      baseUrl: baseUrl,
-      currentPage: pageNumber,
-    })
-    nextUrl = next
+    try {
+      const page = await load(nextUrl, { pattern: searchPattern })
+      const { refs, nextPage: next } = parseSearchPage(page, {
+        baseUrl: baseUrl,
+        currentPage: pageNumber,
+      })
+      nextUrl = next
 
-    const defined = refs.filter((ref) => ref !== undefined)
-    if (defined.length < refs.length) {
-      lostRefs += defined.length
-      console.warn(`Потеряно ссылок ${defined.length}, всего ${lostRefs}`)
-    }
-    totalRefs.push(...defined)
+      const defined = refs.filter((ref) => ref !== undefined)
+      if (defined.length < refs.length) {
+        lostRefs += defined.length
+        console.warn(`Потеряно ссылок ${defined.length}, всего ${lostRefs}`)
+      }
+      totalRefs.push(...defined)
 
-    pageNumber += 1
-    if (nextUrl === undefined) {
-      console.log("Достигнута последняя страница")
+      pageNumber += 1
+      if (nextUrl === undefined) {
+        console.log("Достигнута последняя страница")
+        break
+      }
+    } catch (err) {
       break
     }
   }
@@ -72,24 +76,27 @@ export const page = async (
   while (maxRetries > 0 || rest.length > 0) {
     let failed = []
 
-    await Promise.all(
-      rest.map((ref) => {
-        return scrapeProductPage(ref, { pattern: productPattern })
-          .then((product) => {
-            products.push(product)
-          })
-          .catch((err) => {
-            errors.push(err)
-            failed.push(ref)
-          })
-      }),
+    const prods = await Promise.allSettled(
+      rest.map((ref) => scrapeProductPage(ref, { pattern: productPattern })),
     )
+
+    prods.forEach((prod, idx) => {
+      if (prod.status === "fulfilled") {
+        products.push(prod.value)
+      } else {
+        const ref = rest[idx]
+        console.warn(`Не удалось собрать ${ref}:`, prod.reason.message)
+        failed.push(ref)
+      }
+    })
     rest = failed
 
+    if (rest.length === 0) break
     if (rest.length > 0) {
       maxRetries -= 1
       console.warn(
-        `Не удалось загрузить ${rest.length}, повтор через ${waitTime}мс, осталось ${maxRetries} попыток`,
+        `Не удалось загрузить ${rest.length}, повтор через ${waitTime}мс` +
+          (maxRetries === -1 ? "" : `, осталось ${maxRetries} попыток`),
       )
       await new Promise((resolve) => setTimeout(resolve, waitTime))
       waitTime += 1000
