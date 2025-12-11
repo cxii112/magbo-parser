@@ -51,7 +51,7 @@ export const page = async (
       break
     }
   }
-  if (totalRefs > 0) {
+  if (totalRefs.length > 0) {
     console.warn(`Потеряно ссылок ${lostRefs}`)
   }
 
