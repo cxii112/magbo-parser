@@ -2,7 +2,7 @@ import { load } from "cheerio"
 
 /**
  * Парcит список товаров из каталога
- * @typedef {import('./page.d.ts').Chunk} Chunk
+ * @typedef {import('./refs.d.ts').Chunk} Chunk
  * @param {string} html Страница товара
  * @param {Object} [options] Опции парсинга
  * @param {RegExp} [options.currentPage=1] Начальная страница
