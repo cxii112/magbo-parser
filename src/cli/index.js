@@ -4,7 +4,7 @@ import fs from "node:fs"
 import { makeSearchURL } from "../scrapper/url.js"
 
 const baseUrl = process.env.BASE_URL || "https://magbo.ru"
-const maxRetries = parseInt(process.env.NAX_RETRIES) || 0
+const maxRetries = parseInt(process.env.MAX_RETRIES) || 0
 const args = process.argv.slice(2)
 const filepath = args[0]
 if (!filepath.endsWith(".csv")) {
