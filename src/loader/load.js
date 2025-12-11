@@ -11,6 +11,7 @@ export const load = (url, { pattern = /(https?:\/\/)?magbo.ru\/catalog\/[a-z\d\/
     throw new URIError(`${url} не подходит под ${pattern.source}`)
   }
 
+  console.log(`Загружаем ${url}`)
   const res = fetch(url)
     .then((res) => {
       if (!res.ok) {

@@ -13,11 +13,12 @@ export const single = (html) => {
   let $ = load(html)
 
   const title = $("h1#pagetitle").html()
-  const { price, discountPrice } = parsePrices($(".prices-wrapper"))
+  // const prices = $(".prices-wrapper")
+  const { price, discountPrice } = parsePrices($(".prices-wrapper").html())
   const inStock = $(".item-stock > span.icon.stock").length > 0
 
   const { art, id, producer } = parseProps(
-    $(".wrapper_inner #props table.props_list > tbody > tr.js-prop-replace"),
+    $(".wrapper_inner #props table.props_list > tbody").html(),
   )
 
   return {
@@ -39,6 +40,7 @@ export const single = (html) => {
  * @returns {Prices} Информация о ценах
  */
 const parsePrices = (html) => {
+  /**@type {CheerioAPI | undefined} */
   let $prices = undefined
 
   switch (typeof html) {
@@ -46,19 +48,24 @@ const parsePrices = (html) => {
       $prices = load(html)
       break
     case "Cheerio<Element>":
-      $prices = html
+      $prices = load(html, null, false)
       break
     default:
-      return { price: undefined, discountPrice: undefined }
+      console.warn(`Получен тип ${typeof html}`)
+      try {
+        $prices = load(html, null, false)
+      } catch (err) {
+        console.log(err)
+        return { price: undefined, discountPrice: undefined }
+      }
   }
 
   let discountPrice = undefined
   try {
     discountPrice = parseInt(
-      ($(".price.font-bold > .price_value_block > .price_value").html() || undefined).replaceAll(
-        " ",
-        "",
-      ),
+      (
+        $prices(".price.font-bold > .price_value_block > .price_value").html() || undefined
+      ).replaceAll(" ", ""),
     )
   } catch {
     discountPrice = undefined
@@ -68,7 +75,7 @@ const parsePrices = (html) => {
   try {
     price = parseInt(
       (
-        $(".price.discount > .discount.values_wrapper > .price_value").html() || undefined
+        $prices(".price.discount > .discount.values_wrapper > .price_value").html() || undefined
       ).replaceAll(" ", ""),
     )
   } catch {
@@ -85,28 +92,35 @@ const parsePrices = (html) => {
  * @returns {Properties} Доп. информация о товаре
  */
 const parseProps = (html) => {
+  /**@type {CheerioAPI | undefined} */
   let $table = undefined
 
   switch (typeof html) {
     case "string":
-      $table = load(html)
+      $table = load(html, null, false)
       break
     case "Cheerio<Element>":
-      $table = html
+      $table = load(html, null, false)
       break
     default:
-      return {
-        art: undefined,
-        id: undefined,
-        producer: undefined,
+      console.warn(`Получен тип ${typeof html}`)
+      try {
+        $table = load(html, null, false)
+      } catch (err) {
+        console.log(err)
+        return {
+          art: undefined,
+          id: undefined,
+          producer: undefined,
+        }
       }
   }
 
   let id = undefined
   let art = undefined
   let producer = undefined
-
-  for (let tr of $table) {
+  const trs = $table("tr.js-prop-replace")
+  for (let tr of trs) {
     const $row = load(tr, null, false)
     const head = $row('td.char_name span.js-prop-title[itemprop="name"]')
     const value = $row('td.char_value span.js-prop-value[itemprop="value"]')

@@ -1,5 +1,5 @@
 import { load } from "../loader/load.js"
-import { single as parsePage } from "../parser/single.js"
+import { single as parseProductPage } from "../parser/single.js"
 
 /**
  * @typedef {import('./product.d.ts').ProductWithURL} ProductWithURL
@@ -16,7 +16,7 @@ export const single = async (
   } = {},
 ) => {
   const page = await load(url, { pattern: pattern })
-  const product = parsePage(page)
+  const product = parseProductPage(page)
   return {
     url: url,
     ...product,
