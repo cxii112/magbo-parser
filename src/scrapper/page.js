@@ -65,7 +65,7 @@ export const page = async (
   let waitTime = 1000
   let errors = []
 
-  while (rest.length > 0 || maxRetries > 0) {
+  while (maxRetries > 0 || rest.length > 0) {
     let failed = []
 
     await Promise.all(
