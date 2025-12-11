@@ -23,7 +23,7 @@ const requests = args.slice(1).map((arg) => {
 
 let products = []
 
-await Promise.all(
+await Promise.allSettled(
   requests.map((req) => {
     return page(req, { baseUrl: baseUrl, maxRetries: maxRetries })
       .then((prods) => {
